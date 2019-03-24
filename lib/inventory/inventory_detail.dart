@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'inventory_item.dart';
 
@@ -13,11 +14,19 @@ class InventoryDetail extends StatefulWidget {
 
 class InventoryDetailState extends State<InventoryDetail> {
   Set<String> _favorites;
+  AssetImage _itemImageAsset;
 
   @override
   Widget build(BuildContext context) {
     InventoryItem item = widget.item;
+    _itemImageAsset = AssetImage("assets/"+item.itemId+".jpg");
     _favorites = widget.favorites;
+
+    precacheImage(_itemImageAsset, context, onError: (e, stackTrace) {
+      setState(() {
+        _itemImageAsset = AssetImage("assets/tink-circle-512.png");
+      });
+    });
 
     return new Scaffold(
       appBar: new AppBar(
@@ -30,30 +39,42 @@ class InventoryDetailState extends State<InventoryDetail> {
               })
         ],
       ),
-      body: Column(children: <Widget>[
-        Expanded(child: Image.asset("assets/BOOK1.jpg", fit: BoxFit.cover))
-      ]),
-      bottomSheet: Column(
-        //padding: EdgeInsets.only(top: 80.0, left: 24.0, right: 24.0),
-        children: <Widget>[
-          SizedBox(height: 16.0),
-          Text(item.description),
-          SizedBox(height: 24.0),
-          RaisedButton(
-            color: Colors.lightBlueAccent,
-            padding: EdgeInsets.symmetric(vertical: 12.0),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: new Text(
-              "Purchase",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24.0,
+      body: Builder(
+        // inner builder so we can fetch the scaffold from context for snack bar
+        builder: (BuildContext context) {
+          return Column(
+            children: <Widget>[
+              Expanded(child: new Image(image: _itemImageAsset, fit:BoxFit.cover)),
+              Container(
+                child: Text(item.description),
+                padding: EdgeInsets.all(16.0),
               ),
-            ),
-          )  
-        ]
+              Container(
+                child: RaisedButton(
+                  color: Colors.lightBlueAccent,
+                  padding: EdgeInsets.symmetric(vertical: 12.0),
+                  onPressed: () {
+                    SnackBar snack = new SnackBar(
+                      content: new Text("Thanks for your purchase"),
+                    );
+                    Scaffold.of(context).showSnackBar(snack);
+                    Future.delayed(Duration(seconds:1), () {
+                      Navigator.of(context).pop();
+                    });
+                  },
+                  child: new Text(
+                    "Purchase",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24.0,
+                    ),
+                  ),
+                ),
+                padding: EdgeInsets.all(16.0),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
