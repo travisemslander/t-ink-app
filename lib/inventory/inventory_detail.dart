@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'inventory_item.dart';
+import 'dart:math' as math;
 
 class InventoryDetail extends StatefulWidget {
   final InventoryItem item;
@@ -70,37 +71,80 @@ class InventoryDetailScroller extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        Expanded(child: new Image(image: _itemImageAsset, fit:BoxFit.cover)),
-        Container(
-          child: Text(_item.description),
-          padding: EdgeInsets.all(16.0),
+    return CustomScrollView(
+      slivers: <Widget>[
+        SliverPersistentHeader(
+          pinned: true,
+          delegate:_SliverAppBarDelegate(
+            minHeight: 60.0,
+            maxHeight: 400.0,
+            child: Image(image: _itemImageAsset, fit:BoxFit.cover),
+          )
         ),
-        Container(
-          child: RaisedButton(
-            color: Colors.lightBlueAccent,
-            padding: EdgeInsets.symmetric(vertical: 12.0),
-            onPressed: () {
-              SnackBar snack = new SnackBar(
-                content: new Text("Thanks for your purchase"),
-              );
-              Scaffold.of(context).showSnackBar(snack);
-              Future.delayed(Duration(seconds:1), () {
-                Navigator.of(context).pop();
-              });
-            },
-            child: new Text(
-              "Purchase",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24.0,
+        SliverList(
+          delegate: SliverChildListDelegate(
+            [
+              Container(
+                child: Text(_item.description),
+                padding: EdgeInsets.all(16.0),
               ),
-            ),
+              Container(
+                child: RaisedButton(
+                  color: Colors.lightBlueAccent,
+                  padding: EdgeInsets.symmetric(vertical: 12.0),
+                  onPressed: () {
+                    SnackBar snack = new SnackBar(
+                      content: new Text("Thanks for your purchase"),
+                    );
+                    Scaffold.of(context).showSnackBar(snack);
+                    Future.delayed(Duration(seconds:1), () {
+                      Navigator.of(context).pop();
+                    });
+                  },
+                  child: new Text(
+                    "Purchase",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24.0,
+                    ),
+                  ),
+                ),
+                padding: EdgeInsets.all(16.0),
+              ),
+            ]
           ),
-          padding: EdgeInsets.all(16.0),
-        ),
-      ],
+        )
+      ]
     );
+  }
+}
+
+/* below from https://medium.com/flutter-io/slivers-demystified-6ff68ab0296f */
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  _SliverAppBarDelegate({
+    @required this.minHeight,
+    @required this.maxHeight,
+    @required this.child,
+  });
+  final double minHeight;
+  final double maxHeight;
+  final Widget child;
+  @override
+  double get minExtent => minHeight;
+  @override
+  double get maxExtent => math.max(maxHeight, minHeight);
+  @override
+  Widget build(
+      BuildContext context, 
+      double shrinkOffset, 
+      bool overlapsContent) 
+  {
+    return new SizedBox.expand(child: child);
+  }
+  @override
+  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
+    return maxHeight != oldDelegate.maxHeight ||
+        minHeight != oldDelegate.minHeight ||
+        child != oldDelegate.child;
   }
 }
