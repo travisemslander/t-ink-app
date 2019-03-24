@@ -19,8 +19,8 @@ class InventoryDetailState extends State<InventoryDetail> {
   @override
   Widget build(BuildContext context) {
     InventoryItem item = widget.item;
-    _itemImageAsset = AssetImage("assets/"+item.itemId+".jpg");
     _favorites = widget.favorites;
+    _itemImageAsset = AssetImage("assets/"+item.itemId+".jpg");
 
     precacheImage(_itemImageAsset, context, onError: (e, stackTrace) {
       setState(() {
@@ -39,43 +39,7 @@ class InventoryDetailState extends State<InventoryDetail> {
               })
         ],
       ),
-      body: Builder(
-        // inner builder so we can fetch the scaffold from context for snack bar
-        builder: (BuildContext context) {
-          return Column(
-            children: <Widget>[
-              Expanded(child: new Image(image: _itemImageAsset, fit:BoxFit.cover)),
-              Container(
-                child: Text(item.description),
-                padding: EdgeInsets.all(16.0),
-              ),
-              Container(
-                child: RaisedButton(
-                  color: Colors.lightBlueAccent,
-                  padding: EdgeInsets.symmetric(vertical: 12.0),
-                  onPressed: () {
-                    SnackBar snack = new SnackBar(
-                      content: new Text("Thanks for your purchase"),
-                    );
-                    Scaffold.of(context).showSnackBar(snack);
-                    Future.delayed(Duration(seconds:1), () {
-                      Navigator.of(context).pop();
-                    });
-                  },
-                  child: new Text(
-                    "Purchase",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24.0,
-                    ),
-                  ),
-                ),
-                padding: EdgeInsets.all(16.0),
-              ),
-            ],
-          );
-        },
-      ),
+      body: InventoryDetailScroller(widget.item, _itemImageAsset)
     );
   }
 
@@ -95,5 +59,48 @@ class InventoryDetailState extends State<InventoryDetail> {
         _favorites.add(itemId);
       }
     });
+  }
+}
+
+class InventoryDetailScroller extends StatelessWidget {
+  final InventoryItem _item;
+  final AssetImage _itemImageAsset;
+
+  InventoryDetailScroller(this._item, this._itemImageAsset);
+  
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        Expanded(child: new Image(image: _itemImageAsset, fit:BoxFit.cover)),
+        Container(
+          child: Text(_item.description),
+          padding: EdgeInsets.all(16.0),
+        ),
+        Container(
+          child: RaisedButton(
+            color: Colors.lightBlueAccent,
+            padding: EdgeInsets.symmetric(vertical: 12.0),
+            onPressed: () {
+              SnackBar snack = new SnackBar(
+                content: new Text("Thanks for your purchase"),
+              );
+              Scaffold.of(context).showSnackBar(snack);
+              Future.delayed(Duration(seconds:1), () {
+                Navigator.of(context).pop();
+              });
+            },
+            child: new Text(
+              "Purchase",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24.0,
+              ),
+            ),
+          ),
+          padding: EdgeInsets.all(16.0),
+        ),
+      ],
+    );
   }
 }
