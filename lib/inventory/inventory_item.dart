@@ -6,7 +6,7 @@ class InventoryItem {
   final InventoryType type;
   final String itemId;
 
-  InventoryItem(this.itemId, this.name, this.description, this.type) {
+  InventoryItem(this.itemId, this.type, this.name, this.description) {
     // nothing to put here
   }
 }
