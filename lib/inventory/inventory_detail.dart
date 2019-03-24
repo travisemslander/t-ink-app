@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'inventory_item.dart';
-import 'dart:math' as math;
 
 class InventoryDetail extends StatefulWidget {
   final InventoryItem item;
@@ -30,17 +29,7 @@ class InventoryDetailState extends State<InventoryDetail> {
     });
 
     return new Scaffold(
-      appBar: new AppBar(
-        title: Text(item.name),
-        actions: <Widget>[
-          IconButton(
-              icon: _favoriteIcon(item.itemId),
-              onPressed: () {
-                _favoriteToggle(item.itemId);
-              })
-        ],
-      ),
-      body: InventoryDetailScroller(widget.item, _itemImageAsset)
+      body: InventoryDetailScroller(widget.item, _itemImageAsset, _favoriteIcon(item.itemId), () => _favoriteToggle(item.itemId))
     );
   }
 
@@ -66,20 +55,42 @@ class InventoryDetailState extends State<InventoryDetail> {
 class InventoryDetailScroller extends StatelessWidget {
   final InventoryItem _item;
   final AssetImage _itemImageAsset;
+  final Icon _favicon;
+  final _favfunc;
 
-  InventoryDetailScroller(this._item, this._itemImageAsset);
+  InventoryDetailScroller(this._item, this._itemImageAsset, this._favicon, this._favfunc);
   
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
       slivers: <Widget>[
-        SliverPersistentHeader(
-          pinned: true,
-          delegate:_SliverAppBarDelegate(
-            minHeight: 60.0,
-            maxHeight: 400.0,
-            child: Image(image: _itemImageAsset, fit:BoxFit.cover),
-          )
+        SliverAppBar(
+          title: Text(_item.name),
+          backgroundColor: Colors.black, // shouldn't matter
+          expandedHeight: 400.0,
+          flexibleSpace: FlexibleSpaceBar(
+            background: Stack(
+              fit: StackFit.expand,
+              children: <Widget>[
+                Image(image:_itemImageAsset, fit:BoxFit.cover),
+                const DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment(0.0, -1.0),
+                      end: Alignment(0.0, 0.5),
+                      colors: <Color>[Color(0x70000000), Color(0x00000000)],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            IconButton(
+              icon: _favicon,
+              onPressed: _favfunc,
+            ),
+          ],
         ),
         SliverList(
           delegate: SliverChildListDelegate(
@@ -116,35 +127,5 @@ class InventoryDetailScroller extends StatelessWidget {
         )
       ]
     );
-  }
-}
-
-/* below from https://medium.com/flutter-io/slivers-demystified-6ff68ab0296f */
-class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  _SliverAppBarDelegate({
-    @required this.minHeight,
-    @required this.maxHeight,
-    @required this.child,
-  });
-  final double minHeight;
-  final double maxHeight;
-  final Widget child;
-  @override
-  double get minExtent => minHeight;
-  @override
-  double get maxExtent => math.max(maxHeight, minHeight);
-  @override
-  Widget build(
-      BuildContext context, 
-      double shrinkOffset, 
-      bool overlapsContent) 
-  {
-    return new SizedBox.expand(child: child);
-  }
-  @override
-  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
-    return maxHeight != oldDelegate.maxHeight ||
-        minHeight != oldDelegate.minHeight ||
-        child != oldDelegate.child;
   }
 }
